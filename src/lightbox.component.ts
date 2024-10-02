@@ -14,6 +14,8 @@ import {
   ViewChild,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
+import { ChangeDetectorRef } from '@angular/core';
+
 
 import {
   IAlbum,
@@ -101,7 +103,8 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
     private _lightboxWindowRef: LightboxWindowRef,
     private _fileSaverService: FileSaverService,
     private _sanitizer: DomSanitizer,
-    @Inject(DOCUMENT) private _documentRef
+    @Inject(DOCUMENT) private _documentRef,
+    private cd: ChangeDetectorRef  // Inject ChangeDetectorRef here
   ) {
     // initialize data
     this.options = this.options || {};
@@ -172,6 +175,17 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
 
     if (this._validateInputData()) {
       this._prepareComponent();
+      const imageElement = this._imageElem.nativeElement;
+
+      imageElement.onload = () => {
+      	this._onLoadImageSuccess();  // Manually call the method to handle the image loading
+      };
+
+      imageElement.onerror = (error) => {
+      	console.error('Error loading image:', error);
+      	this.ui.showReloader = false;  // Hide the loader on error
+      };
+
       this._registerImageLoadingEvent();
     }
   }
@@ -413,7 +427,11 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
     if (this.options.centerVertically) {
       this._centerVertically(imageWidth, imageHeight);
     }
-  }
+    this.ui.showReloader = false;
+    this._updateNav();
+    this._updateDetails();
+    this.cd.detectChanges();  // This is the key change to ensure the UI refreshes properly in Electron.
+}
 
   private _centerVertically(imageWidth: number, imageHeight: number): void {
     const scrollOffset = this._documentRef.documentElement.scrollTop;
