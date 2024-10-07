@@ -1,0 +1,52 @@
+{
+  "name": "@servoy/ngx-lightbox",
+  "version": "3.0.0",
+  "description": "A port >= angular5 for lightbox2",
+  "main": "index.js",
+  "dependencies": {
+    "file-saver": "^2.0.5",
+    "ngx-filesaver": "18.0.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^18.2.7",
+    "@angular/cli": "^18.2.7",
+    "@angular/common": "^18.2.7",
+    "@angular/compiler": "^18.2.7",
+    "@angular/compiler-cli": "^18.2.7",
+    "@angular/core": "^18.2.7",
+    "@angular/platform-browser": "^18.2.7",
+    "@angular/platform-browser-dynamic": "^18.2.7",
+    "@types/file-saver": "^2.0.7",
+    "@types/jasmine": "^5.1.4",
+    "copyfiles": "^2.4.1",
+    "core-js": "^3.38.1",
+    "del-cli": "^5.1.0",
+    "jasmine-core": "^5.3.0",
+    "karma": "^6.4.4",
+    "karma-jasmine": "^5.1.0",
+    "karma-sourcemap-loader": "^0.4.0",
+    "rxjs": "^7.8.1",
+    "tslint": "^6.1.3",
+    "typescript": "5.5.4",
+    "webpack": "^5.95.0",
+    "zone.js": "^0.14.10"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/themyth92/ngx-lightbox.git"
+  },
+  "keywords": [
+    "lightbox2",
+    "angularjs",
+    "directives",
+    "lightbox2",
+    "angular",
+    "directives"
+  ],
+  "author": "themyth92",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/themyth92/ngx-lightbox/issues"
+  },
+  "homepage": "https://github.com/themyth92/ngx-lightbox#readme"
+}
