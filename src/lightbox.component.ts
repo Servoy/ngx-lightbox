@@ -16,7 +16,6 @@ import {
 import { DomSanitizer } from '@angular/platform-browser';
 import { ChangeDetectorRef } from '@angular/core';
 
-
 import {
   IAlbum,
   IEvent,
@@ -95,6 +94,10 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
   private _event: any;
   private _windowRef: any;
   private rotate: number;
+
+  private imageLoaded: boolean;
+  private resizeComplete: boolean;
+
   constructor(
     private _elemRef: ElementRef,
     private _rendererRef: Renderer2,
@@ -104,7 +107,7 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
     private _fileSaverService: FileSaverService,
     private _sanitizer: DomSanitizer,
     @Inject(DOCUMENT) private _documentRef,
-    private cd: ChangeDetectorRef  // Inject ChangeDetectorRef here
+    private cd: ChangeDetectorRef
   ) {
     // initialize data
     this.options = this.options || {};
@@ -175,17 +178,6 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
 
     if (this._validateInputData()) {
       this._prepareComponent();
-      const imageElement = this._imageElem.nativeElement;
-
-      imageElement.onload = () => {
-      	this._onLoadImageSuccess();  // Manually call the method to handle the image loading
-      };
-
-      imageElement.onerror = (error) => {
-      	console.error('Error loading image:', error);
-      	this.ui.showReloader = false;  // Hide the loader on error
-      };
-
       this._registerImageLoadingEvent();
     }
   }
@@ -382,11 +374,6 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
    * Fire when the image is loaded
    */
   private _onLoadImageSuccess(): void {
-    if (!this.options.disableKeyboardNav) {
-      // unbind keyboard event during transition
-      this._disableKeyboardNav();
-    }
-
     let imageHeight;
     let imageWidth;
     let maxImageHeight;
@@ -396,9 +383,12 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
     let naturalImageWidth;
     let naturalImageHeight;
 
-    // set default width and height of image to be its natural
+    this.imageLoaded = false;
+    this.resizeComplete = false;
+  
     imageWidth = naturalImageWidth = this._imageElem.nativeElement.naturalWidth;
     imageHeight = naturalImageHeight = this._imageElem.nativeElement.naturalHeight;
+
     if (this.options.fitImageInViewPort) {
       windowWidth = this._windowRef.innerWidth;
       windowHeight = this._windowRef.innerHeight;
@@ -408,7 +398,9 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
       maxImageHeight = windowHeight - this._cssValue.containerTopPadding -
         this._cssValue.containerTopPadding - this._cssValue.imageBorderWidthTop -
         this._cssValue.imageBorderWidthBottom - 120;
+  
       if (naturalImageWidth > maxImageWidth || naturalImageHeight > maxImageHeight) {
+        console.log('Resize image');
         if ((naturalImageWidth / maxImageWidth) > (naturalImageHeight / maxImageHeight)) {
           imageWidth = maxImageWidth;
           imageHeight = Math.round(naturalImageHeight / (naturalImageWidth / imageWidth));
@@ -417,21 +409,20 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
           imageWidth = Math.round(naturalImageWidth / (naturalImageHeight / imageHeight));
         }
       }
-
       this._rendererRef.setStyle(this._imageElem.nativeElement, 'width', `${imageWidth}px`);
       this._rendererRef.setStyle(this._imageElem.nativeElement, 'height', `${imageHeight}px`);
     }
-
+  
     this._sizeContainer(imageWidth, imageHeight);
-
+  
     if (this.options.centerVertically) {
       this._centerVertically(imageWidth, imageHeight);
     }
-    this.ui.showReloader = false;
-    this._updateNav();
-    this._updateDetails();
-    this.cd.detectChanges();  // This is the key change to ensure the UI refreshes properly in Electron.
-}
+  
+    this.imageLoaded = true;
+    this._checkImageAndResizeState();
+  }
+  
 
   private _centerVertically(imageWidth: number, imageHeight: number): void {
     const scrollOffset = this._documentRef.documentElement.scrollTop;
@@ -465,15 +456,30 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
             this._rendererRef.listen(this._outerContainerElem.nativeElement, eventName, (event: any) => {
               if (event.target === event.currentTarget) {
                 this._postResize(newWidth, newHeight);
+                this.resizeComplete = true;  
+                this._checkImageAndResizeState();
               }
             })
           );
         });
       } else {
         this._postResize(newWidth, newHeight);
+        this.resizeComplete = true;  
+        this._checkImageAndResizeState();
       }
     } else {
       this._postResize(newWidth, newHeight);
+      this.resizeComplete = true;  
+      this._checkImageAndResizeState();
+    }
+  }
+
+  private _checkImageAndResizeState(): void {
+    if (this.imageLoaded && this.resizeComplete) {
+      requestAnimationFrame(() => {
+        this.ui.showReloader = false;
+        this.cd.detectChanges();
+      });
     }
   }
 
