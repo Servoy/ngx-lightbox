@@ -400,7 +400,6 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
         this._cssValue.imageBorderWidthBottom - 120;
   
       if (naturalImageWidth > maxImageWidth || naturalImageHeight > maxImageHeight) {
-        console.log('Resize image');
         if ((naturalImageWidth / maxImageWidth) > (naturalImageHeight / maxImageHeight)) {
           imageWidth = maxImageWidth;
           imageHeight = Math.round(naturalImageHeight / (naturalImageWidth / imageWidth));
