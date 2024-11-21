@@ -94,6 +94,8 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
   private _event: any;
   private _windowRef: any;
   private rotate: number;
+  private preloaderWidth: number;
+  private preloaderHeight: number;
 
   private imageLoaded: boolean;
   private resizeComplete: boolean;
@@ -293,6 +295,12 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
     this.rotate = 0;
     this._documentRef.getElementById('image').style.transform = `rotate(${this.rotate}deg)`;
     this._documentRef.getElementById('image').style.webkitTransform = `rotate(${this.rotate}deg)`;
+
+     // Clear dimensions
+     this._rendererRef.setStyle(this._imageElem.nativeElement, 'width', '');
+     this._rendererRef.setStyle(this._imageElem.nativeElement, 'height', '');
+     this.preloaderWidth = 0;
+     this.preloaderHeight = 0;
   }
 
   private _calcTransformPoint(): void {
@@ -363,6 +371,9 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
     const preloader = new Image();
 
     preloader.onload = () => {
+      this.preloaderWidth = preloader.naturalWidth;
+      this.preloaderHeight = preloader.naturalHeight;
+
       this._onLoadImageSuccess();
     }
 
@@ -386,8 +397,8 @@ export class LightboxComponent implements OnInit, AfterViewInit, OnDestroy, OnIn
     this.imageLoaded = false;
     this.resizeComplete = false;
   
-    imageWidth = naturalImageWidth = this._imageElem.nativeElement.naturalWidth;
-    imageHeight = naturalImageHeight = this._imageElem.nativeElement.naturalHeight;
+    imageWidth = naturalImageWidth = this.preloaderWidth;
+    imageHeight = naturalImageHeight = this.preloaderHeight;
 
     if (this.options.fitImageInViewPort) {
       windowWidth = this._windowRef.innerWidth;
